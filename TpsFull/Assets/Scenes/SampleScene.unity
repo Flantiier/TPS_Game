@@ -149,7 +149,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 424922263}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.19027814, y: 1.490809, z: -3}
+  m_LocalPosition: {x: 0.19230668, y: 1.490809, z: -3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1645091992}
@@ -215,7 +215,7 @@ MonoBehaviour:
     ModeOverride: 0
     LensShift: {x: 0, y: 0}
     GateFit: 2
-    m_SensorSize: {x: 1.742616, y: 1}
+    m_SensorSize: {x: 1.761194, y: 1}
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -369,7 +369,7 @@ MonoBehaviour:
   turnSmoothTime: 0.1
   jumpHeight: 5
   gravityValue: 9.81
-  test: {fileID: 0}
+  playerAnimController: {fileID: 9100000, guid: 15cd1e2fc71c781478581d762e81db3f, type: 2}
   playerAvatar: {fileID: 9000000, guid: afead9a06f31f53499a5c8a98511a876, type: 3}
 --- !u!143 &831973809
 CharacterController:
@@ -498,7 +498,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.19027814, y: 1.490809, z: -3}
+  m_LocalPosition: {x: 0.19230668, y: 1.490809, z: -3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 2058430864}
@@ -677,6 +677,7 @@ GameObject:
   - component: {fileID: 1645091995}
   - component: {fileID: 1645091994}
   - component: {fileID: 1645091993}
+  - component: {fileID: 1645091996}
   m_Layer: 0
   m_Name: cm
   m_TagString: Untagged
@@ -815,6 +816,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac0b09e7857660247b1477e93731de29, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1645091996
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1645091991}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68bb026fafb42b14791938953eaace77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_NoiseProfile: {fileID: 11400000, guid: 46965f9cbaf525742a6da4c2172a99cd, type: 2}
+  m_PivotOffset: {x: 0, y: 0, z: 0}
+  m_AmplitudeGain: 0.5
+  m_FrequencyGain: 0.5
+  mNoiseOffsets: {x: 0, y: 0, z: 0}
 --- !u!1 &2058430863
 GameObject:
   m_ObjectHideFlags: 0
