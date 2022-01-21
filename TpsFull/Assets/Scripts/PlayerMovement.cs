@@ -111,15 +111,14 @@ public class PlayerMovement : MonoBehaviour
         //Mouvement joueur
         _xValue = _inputs.Motion.x;
         _zValue = _inputs.Motion.y;
-        Vector3 direction = new Vector3(_xValue, 0f, _zValue) * Time.deltaTime;
-        _direction = direction;
+        _direction.Set(_xValue, 0f, _zValue);
 
         Vector3 moveDir = new Vector3();
 
-        if (direction.normalized.magnitude >= 0.1f)
+        if (_direction.normalized.magnitude >= 0.1f)
         {
             //calcul de l'angle vers lequel le joueur se dirige + rotation de la cam
-            float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + _cam.eulerAngles.y;
+            float targetAngle = Mathf.Atan2(_direction.x, _direction.z) * Mathf.Rad2Deg + _cam.eulerAngles.y;
             //smooth l'angle
             float dampedAngle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
             //rotation du joueur
@@ -143,21 +142,26 @@ public class PlayerMovement : MonoBehaviour
         //si le player est grounded
         if (_cc.isGrounded)
         {
+            Debug.Log("Grounded");
             //applique une gravité faible
             _ySpeed = -gravityValue * 0.3f;
-            
+
             //si le player appuie sur Jump et qu'il est grounded
             if (_inputs.Jump)
+            {
                 //on lui aplique la force du saut
                 _ySpeed = jumpHeight;
+                _animator.SetTrigger("Jump");
+            }
         }
         //sinon
         else
         {
+            Debug.Log("Pas Grounded");
             //si la valeur est proche de 0, on la set a 0
             if (Mathf.Approximately(_ySpeed, 0f))
                 _ySpeed = 0f;
-            
+
             _ySpeed -= gravityValue * Time.deltaTime;
         }
 
@@ -170,8 +174,16 @@ public class PlayerMovement : MonoBehaviour
     #region Animation Methods
     private void UpdateAnims()
     {
-        _animator.SetFloat("Speed", _direction.normalized.magnitude);
+        _animator.SetFloat("Speed", _direction.magnitude);
+
+        if (!_cc.isGrounded)
+        {
+            _animator.SetBool("IsGrounded", false);
+            _animator.SetFloat("VerticalSpeed", _ySpeed);
+        }
+        else
+            _animator.SetBool("IsGrounded", true);
     }
     #endregion
-    #endregion
 }
+#endregion
