@@ -9,8 +9,6 @@ public class PlayerInputs : MonoBehaviour
 	private Vector2 _motion;
 	private float _moveX;
 	private float _moveY;
-	//Sprint
-	private bool _run;
 
 	//input du saut
 	private bool _jump;
@@ -21,10 +19,6 @@ public class PlayerInputs : MonoBehaviour
 	/// Déplacements du joueur
 	/// </summary>
 	public Vector2 Motion => _motion;
-	/// <summary>
-	/// Sprint activé
-	/// </summary>
-	public bool Run => _run;
 	/// <summary>
 	/// Jump du joueur
 	/// </summary>
@@ -48,8 +42,6 @@ public class PlayerInputs : MonoBehaviour
 		_moveX = Input.GetAxis("Horizontal");
 		_moveY = Input.GetAxis("Vertical");
 		_motion.Set(_moveX, _moveY);
-		//Sprint
-		_run = Input.GetButton("Fire3");
 		//jump du joueur
 		_jump = Input.GetButtonDown("Jump");
 	}
