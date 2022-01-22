@@ -365,8 +365,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bdcb37002a752d543b368867c44b5555, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  characterSpeed: 4
-  turnSmoothTime: 0.1
+  walkSpeed: 3
+  rotateSpeedPlayer: 0.1
+  runningSpeed: 5
+  smoothSpeedRatio: 0.3
   jumpHeight: 5
   gravityValue: 9.81
   playerAnimController: {fileID: 9100000, guid: 15cd1e2fc71c781478581d762e81db3f, type: 2}

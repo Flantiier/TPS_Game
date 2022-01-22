@@ -233,7 +233,7 @@ ModelImporter:
       name: jump_LandFall
       takeName: mixamo.com
       internalID: 0
-      firstFrame: 40
+      firstFrame: 43
       lastFrame: 56
       wrapMode: 0
       orientationOffsetY: 0

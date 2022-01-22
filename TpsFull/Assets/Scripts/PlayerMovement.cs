@@ -8,17 +8,27 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     #region Variables
-    [Header("Speed Parameters")]
+    [Header("Motion Parameters")]
     /// <summary>
     /// vitesse de déplacements du player
     /// </summary>
     [SerializeField]
-    private float characterSpeed;
+    private float walkSpeed;
     /// <summary>
     /// vitesse de rotation du player
     /// </summary>
     [SerializeField]
-    private float turnSmoothTime;
+    private float rotateSpeedPlayer;
+    /// <summary>
+    /// vitesse de course du player
+    /// </summary>
+    [SerializeField]
+    private float runningSpeed;
+    /// <summary>
+    /// smooth ratio pour les changements de speed
+    /// </summary>
+    [SerializeField]
+    private float smoothSpeedRatio;
 
     [Header("Jump Parameters")]
     /// <summary>
@@ -56,6 +66,13 @@ public class PlayerMovement : MonoBehaviour
     private float _xValue;
     private float _zValue;
     private float _ySpeed;
+
+    //Vitesse du joueur
+    private float _currentSpeed;
+    private float _targetSpeed;
+
+    //Saut en courant
+    private bool _runJump = false;
 
     //Rotation du joueur
     private float turnSmoothVelocity;
@@ -120,7 +137,7 @@ public class PlayerMovement : MonoBehaviour
             //calcul de l'angle vers lequel le joueur se dirige + rotation de la cam
             float targetAngle = Mathf.Atan2(_direction.x, _direction.z) * Mathf.Rad2Deg + _cam.eulerAngles.y;
             //smooth l'angle
-            float dampedAngle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
+            float dampedAngle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, rotateSpeedPlayer);
             //rotation du joueur
             transform.rotation = Quaternion.Euler(0f, dampedAngle, 0f);
 
@@ -128,8 +145,26 @@ public class PlayerMovement : MonoBehaviour
             moveDir = Quaternion.Euler(0f, dampedAngle, 0f) * Vector3.forward;
         }
 
-        //mets a jours le deplacement du joueur
-        _motion = moveDir.normalized * (characterSpeed * Time.deltaTime);
+        //smooth la speed du joueur
+        //si le joueur court ou à sauté en courant
+        if (_direction.magnitude >= 0.1f && _cc.isGrounded && _inputs.Run || _runJump)
+        {
+            //la vitesse de sprint est visée
+            _targetSpeed = runningSpeed;
+        }
+        //sinon s'il marche
+        else if (_direction.magnitude >= 0.1f)
+            //la vitsse de marche est visée
+            _targetSpeed = walkSpeed;
+        //sinon
+        else
+            //la vitesse visée est 0
+            _targetSpeed = 0;
+
+        Debug.Log(_currentSpeed);
+        //smooth la valeur de _currentSpeed vers la _targetSpeed
+        _currentSpeed = Mathf.Lerp(_currentSpeed, _targetSpeed, smoothSpeedRatio);
+        _motion = moveDir.normalized * (_currentSpeed * Time.deltaTime);
     }
 
 
@@ -142,13 +177,16 @@ public class PlayerMovement : MonoBehaviour
         //si le player est grounded
         if (_cc.isGrounded)
         {
-            Debug.Log("Grounded");
             //applique une gravité faible
             _ySpeed = -gravityValue * 0.3f;
 
             //si le player appuie sur Jump et qu'il est grounded
             if (_inputs.Jump)
             {
+                //si le joueur saute en courant sa speed, il garde sa vitesse de course
+                if(_inputs.Run)
+                    _runJump = true;
+
                 //on lui aplique la force du saut
                 _ySpeed = jumpHeight;
                 _animator.SetTrigger("Jump");
@@ -157,7 +195,6 @@ public class PlayerMovement : MonoBehaviour
         //sinon
         else
         {
-            Debug.Log("Pas Grounded");
             //si la valeur est proche de 0, on la set a 0
             if (Mathf.Approximately(_ySpeed, 0f))
                 _ySpeed = 0f;
@@ -168,14 +205,30 @@ public class PlayerMovement : MonoBehaviour
         //applique les deplacements au joueur
         _motion += _ySpeed * Vector3.up * Time.deltaTime;
         _cc.Move(_motion);
+
+        //si le joueur courait au moment du saut 
+        if (_runJump)
+        {
+            //si le cc est grounded
+            if (_cc.isGrounded)
+            {
+                //on repasse le runJump en false
+                _runJump = false;
+            }   
+        }
     }
     #endregion
 
     #region Animation Methods
+    /// <summary>
+    /// Mettre a jours les anims
+    /// </summary>
     private void UpdateAnims()
     {
+        //set la vitesse
         _animator.SetFloat("Speed", _direction.magnitude);
 
+        //Grounded ou non
         if (!_cc.isGrounded)
         {
             _animator.SetBool("IsGrounded", false);
@@ -183,6 +236,12 @@ public class PlayerMovement : MonoBehaviour
         }
         else
             _animator.SetBool("IsGrounded", true);
+
+        //Sprint player
+        if (!_inputs.Run || _direction.magnitude <= 0f || !_cc.isGrounded)
+            _animator.SetBool("Running", false);
+        else if(_inputs.Run && _cc.isGrounded)
+            _animator.SetBool("Running", true);
     }
     #endregion
 }
