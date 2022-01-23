@@ -15,10 +15,10 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField]
     private float walkSpeed;
     /// <summary>
-    /// vitesse de rotation du player
+    /// vitesse quand le joueur est accroupi
     /// </summary>
     [SerializeField]
-    private float rotateSpeedPlayer;
+    private float crouchSpeed;
     /// <summary>
     /// vitesse de course du player
     /// </summary>
@@ -26,6 +26,14 @@ public class PlayerMovement : MonoBehaviour
     private float runningSpeed;
     /// <summary>
     /// smooth ratio pour les changements de speed
+    /// </summary>
+    /// <summary>
+    /// vitesse de rotation du player
+    /// </summary>
+    [SerializeField]
+    private float rotateSpeedPlayer;
+    /// <summary>
+    /// ratio pour smooth la valeur de la vitesse
     /// </summary>
     [SerializeField]
     private float smoothSpeedRatio;
@@ -73,6 +81,9 @@ public class PlayerMovement : MonoBehaviour
 
     //Saut en courant
     private bool _runJump = false;
+
+    //Crouch joueur
+    private bool _crouch => _inputs.Crounch;
 
     //Rotation du joueur
     private float turnSmoothVelocity;
@@ -145,25 +156,9 @@ public class PlayerMovement : MonoBehaviour
             moveDir = Quaternion.Euler(0f, dampedAngle, 0f) * Vector3.forward;
         }
 
-        //smooth la speed du joueur
-        //si le joueur court ou à sauté en courant
-        if (_direction.magnitude >= 0.1f && _cc.isGrounded && _inputs.Run || _runJump)
-        {
-            //la vitesse de sprint est visée
-            _targetSpeed = runningSpeed;
-        }
-        //sinon s'il marche
-        else if (_direction.magnitude >= 0.1f)
-            //la vitsse de marche est visée
-            _targetSpeed = walkSpeed;
-        //sinon
-        else
-            //la vitesse visée est 0
-            _targetSpeed = 0;
+        //set la vitesse du joueur
+        SetPlayerSpeed();
 
-        Debug.Log(_currentSpeed);
-        //smooth la valeur de _currentSpeed vers la _targetSpeed
-        _currentSpeed = Mathf.Lerp(_currentSpeed, _targetSpeed, smoothSpeedRatio);
         _motion = moveDir.normalized * (_currentSpeed * Time.deltaTime);
     }
 
@@ -184,7 +179,7 @@ public class PlayerMovement : MonoBehaviour
             if (_inputs.Jump)
             {
                 //si le joueur saute en courant sa speed, il garde sa vitesse de course
-                if(_inputs.Run)
+                if (_inputs.Run)
                     _runJump = true;
 
                 //on lui aplique la force du saut
@@ -214,7 +209,43 @@ public class PlayerMovement : MonoBehaviour
             {
                 //on repasse le runJump en false
                 _runJump = false;
-            }   
+            }
+        }
+    }
+
+    /// <summary>
+    /// Set la vitesse du joueur en fonction des déplacements, smooth les changements de vitesses
+    /// </summary>
+    private void SetPlayerSpeed()
+    {
+        //smooth la speed du joueur
+        //si le joueur court ou à sauté en courant
+        if (_direction.magnitude >= 0.1f && _cc.isGrounded && _inputs.Run || _runJump)
+        {
+            //la vitesse de sprint est visée
+            _targetSpeed = runningSpeed;
+        }
+        //si le joueur est accroupi
+        else if (_direction.magnitude >= 0.1f && _cc.isGrounded && _inputs.Crounch)
+        {
+            Debug.Log("je suis accroupi");
+            //la vitsse de marche est visée
+            _targetSpeed = crouchSpeed;
+        }
+        //sinon s'il marche
+        else if (_direction.magnitude >= 0.1f)
+            //la vitsse de marche est visée
+            _targetSpeed = walkSpeed;
+        //sinon
+        else
+            //la vitesse visée est 0
+            _targetSpeed = 0;
+
+        //si la vitesse doit est differente
+        if (_currentSpeed != _targetSpeed)
+        {
+            //smooth la valeur de _currentSpeed vers la _targetSpeed
+            _currentSpeed = Mathf.Lerp(_currentSpeed, _targetSpeed, smoothSpeedRatio);
         }
     }
     #endregion
@@ -237,10 +268,15 @@ public class PlayerMovement : MonoBehaviour
         else
             _animator.SetBool("IsGrounded", true);
 
+        if (!_crouch)
+            _animator.SetBool("Crouch", true);
+        else
+            _animator.SetBool("Crouch", false);
+
         //Sprint player
         if (!_inputs.Run || _direction.magnitude <= 0f || !_cc.isGrounded)
             _animator.SetBool("Running", false);
-        else if(_inputs.Run && _cc.isGrounded)
+        else if (_inputs.Run && _cc.isGrounded)
             _animator.SetBool("Running", true);
     }
     #endregion
