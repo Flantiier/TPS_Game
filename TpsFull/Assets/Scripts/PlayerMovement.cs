@@ -1,14 +1,20 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
-[RequireComponent(typeof(PlayerInputs))]
+[RequireComponent(typeof(PlayerInput))]
 [RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(Animator))]
 public class PlayerMovement : MonoBehaviour
 {
     #region Variables
     [Header("Motion Parameters")]
+    /// <summary>
+    /// Camera du joueur
+    /// </summary>
+    [SerializeField]
+    private Transform _cam;
     /// <summary>
     /// vitesse de déplacements du player
     /// </summary>
@@ -24,9 +30,6 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     [SerializeField]
     private float runningSpeed;
-    /// <summary>
-    /// smooth ratio pour les changements de speed
-    /// </summary>
     /// <summary>
     /// vitesse de rotation du player
     /// </summary>
@@ -63,17 +66,41 @@ public class PlayerMovement : MonoBehaviour
     private Avatar playerAvatar;
 
     //Components To Get, player
-    private PlayerInputs _inputs;
+    private PlayerInput _inputActions;
     private CharacterController _cc;
-    private Transform _cam;
     private Animator _animator;
 
+    //Inputs Actions
+    /// <summary>
+    /// Move Inputs
+    /// </summary>
+    private InputAction Move => _inputActions.actions["Move"];
+    /// <summary>
+    /// Jump Inputs
+    /// </summary>
+    private InputAction Jump => _inputActions.actions["Jump"];
+    /// <summary>
+    /// Run Inputs
+    /// </summary>
+    private InputAction Run => _inputActions.actions["Run"];
+    /// <summary>
+    /// Crouch Inputs
+    /// </summary>
+    private InputAction Crouch => _inputActions.actions["Crouch"];
+
     //Déplacements du joueur
+    /// <summary>
+    /// Déplacement complet du joueur, motion et jump
+    /// </summary>
     private Vector3 _motion;
+    /// <summary>
+    /// Motion du joueur
+    /// </summary>
     private Vector3 _direction;
-    private float _xValue;
-    private float _zValue;
-    private float _ySpeed;
+    /// <summary>
+    /// vitesse du joueur sur l'axe Y
+    /// </summary>
+    private float _verticalVelocity;
 
     //Vitesse du joueur
     private float _currentSpeed;
@@ -81,9 +108,10 @@ public class PlayerMovement : MonoBehaviour
 
     //Saut en courant
     private bool _runJump = false;
+    private bool _isRunning = false;
 
     //Crouch joueur
-    private bool _crouch => _inputs.Crounch;
+    private bool _crouch;
 
     //Rotation du joueur
     private float _turnSmoothVelocity;
@@ -101,7 +129,6 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
         Motion();
-        VerticalMovevement();
         UpdateAnims();
     }
     #endregion
@@ -113,11 +140,8 @@ public class PlayerMovement : MonoBehaviour
     private void Initiate()
     {
         //motion
-        _inputs = GetComponent<PlayerInputs>();
+        _inputActions = GetComponent<PlayerInput>();
         _cc = GetComponent<CharacterController>();
-
-        //cam
-        _cam = Camera.main.transform;
 
         //anims
         _animator = GetComponent<Animator>();
@@ -132,14 +156,13 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     private void Motion()
     {
-        //si il n'y a pas d'inputs
-        if (!_inputs)
-            return;
+        PlayerRunning();
+        PlayerCrouching();
+        VerticalMovement();
 
         //Mouvement joueur
-        _xValue = _inputs.Motion.x;
-        _zValue = _inputs.Motion.y;
-        _direction.Set(_xValue, 0f, _zValue);
+        Vector2 inputs = Move.ReadValue<Vector2>();
+        _direction.Set(inputs.x, 0f, inputs.y);
 
         Vector3 moveDir = new Vector3();
 
@@ -158,34 +181,35 @@ public class PlayerMovement : MonoBehaviour
 
         //set la vitesse du joueur
         SetPlayerSpeed();
+
         _motion = moveDir.normalized * (_currentSpeed * Time.deltaTime);
+
     }
 
 
     /// <summary>
     /// Vertical Velocity Movements
     /// </summary>
-    private void VerticalMovevement()
+    private void VerticalMovement()
     {
-        //calcul du mouvement vertical du joueur sur l'axe y
         //si le player est grounded
         if (_cc.isGrounded)
         {
             //applique une gravité faible
-            _ySpeed = -gravityValue * 0.3f;
+            _verticalVelocity = -gravityValue * 0.3f;
 
             //si le player appuie sur Jump et qu'il est grounded
-            if (_inputs.Jump)
+            if (Jump.triggered)
             {
                 //si le joueur saute en courant sa speed, il garde sa vitesse de course
-                if (_inputs.Run)
+                if (_isRunning)
                     _runJump = true;
 
-                if(_inputs.Crounch)
-                    //on lui aplique la force du saut
-                    _ySpeed = jumpHeight * 0.75f;
+                //on regarde s'il est accroupi
+                if(_crouch)
+                    _verticalVelocity = jumpHeight * 0.75f;
                 else
-                    _ySpeed = jumpHeight;
+                    _verticalVelocity = jumpHeight;
 
                 //anim
                 _animator.SetTrigger("Jump");
@@ -195,14 +219,14 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             //si la valeur est proche de 0, on la set a 0
-            if (Mathf.Approximately(_ySpeed, 0f))
-                _ySpeed = 0f;
+            if (Mathf.Approximately(_verticalVelocity, 0f))
+                _verticalVelocity = 0f;
 
-            _ySpeed -= gravityValue * Time.deltaTime;
+            _verticalVelocity -= gravityValue * Time.deltaTime;
         }
 
         //applique les deplacements au joueur
-        _motion += _ySpeed * Vector3.up * Time.deltaTime;
+        _motion += _verticalVelocity * Vector3.up * Time.deltaTime;
         _cc.Move(_motion);
 
         //si le joueur courait au moment du saut 
@@ -218,15 +242,14 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     private void SetPlayerSpeed()
     {
-        //smooth la speed du joueur
         //si le joueur court ou à sauté en courant
-        if (_direction.magnitude >= 0.1f && _cc.isGrounded && _inputs.Run || _runJump)
+        if (_direction.magnitude >= 0.1f && _cc.isGrounded && _isRunning || _runJump)
         {
             //la vitesse de sprint est visée
             _targetSpeed = runningSpeed;
         }
         //si le joueur est accroupi
-        else if (_direction.magnitude >= 0.1f && _cc.isGrounded && _inputs.Crounch)
+        else if (_direction.magnitude >= 0.1f && _cc.isGrounded && _crouch)
         {
             //la vitsse de marche est visée
             _targetSpeed = crouchSpeed;
@@ -249,6 +272,44 @@ public class PlayerMovement : MonoBehaviour
             _currentSpeed = Mathf.Lerp(_currentSpeed, _targetSpeed, smoothSpeedRatio);
         }
     }
+
+    /// <summary>
+    /// Check si le player court, modifie le bool en fonction du device connecté
+    /// </summary>
+    private void PlayerRunning()
+    {
+        //si c'est un GamePad
+        if (_inputActions.currentControlScheme == "GamePad")
+        {
+            if (Run.triggered)
+            {
+                _isRunning = !_isRunning;
+            }
+        }
+        //si c'est un clavier/souris
+        else if(_inputActions.currentControlScheme == "Keyboard")
+        {
+            if (Run.ReadValue<float>() > 0.1f)
+                _isRunning = true;
+            else
+                _isRunning = false;
+        }
+    }
+    
+    /// <summary>
+    /// Check si le joueur est accroupi
+    /// </summary>
+    private void PlayerCrouching()
+    {
+        if (_isRunning)
+        {
+            _crouch = false;
+            return;
+        }
+
+        if (Crouch.triggered)
+            _crouch = !_crouch;            
+    }
     #endregion
 
     #region Animation Methods
@@ -264,7 +325,7 @@ public class PlayerMovement : MonoBehaviour
         if (!_cc.isGrounded)
         {
             _animator.SetBool("IsGrounded", false);
-            _animator.SetFloat("VerticalSpeed", _ySpeed);
+            _animator.SetFloat("VerticalSpeed", _verticalVelocity);
         }
         else
             _animator.SetBool("IsGrounded", true);
@@ -276,9 +337,9 @@ public class PlayerMovement : MonoBehaviour
             _animator.SetBool("Crouching", true);
 
         //Sprint anim
-        if (!_inputs.Run || _direction.magnitude <= 0f || !_cc.isGrounded)
+        if (!_isRunning || _direction.magnitude <= 0f || !_cc.isGrounded)
             _animator.SetBool("Running", false);
-        else if (_inputs.Run && _cc.isGrounded)
+        else if (_isRunning && _cc.isGrounded)
             _animator.SetBool("Running", true);
     }
     #endregion

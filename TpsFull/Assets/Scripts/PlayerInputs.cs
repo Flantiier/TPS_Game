@@ -17,6 +17,9 @@ public class PlayerInputs : MonoBehaviour
 
     //input du crouch
     private bool _crouch;
+
+    //aim 
+    private bool _aim;
     #endregion
 
     #region Properties
@@ -36,6 +39,10 @@ public class PlayerInputs : MonoBehaviour
     /// Crouch player
     /// </summary>
     public bool Crounch => _crouch;
+    /// <summary>
+    /// Aim player
+    /// </summary>
+    public bool Aim => _aim;
     #endregion
 
     #region BuildIn Methods
@@ -60,6 +67,7 @@ public class PlayerInputs : MonoBehaviour
         _jump = Input.GetButtonDown("Jump");
         //crouch player
         CrouchPlayer();
+        _aim = Input.GetMouseButton(1);
     }
 
     //Sprint method du player
