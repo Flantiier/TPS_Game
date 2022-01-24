@@ -55,28 +55,30 @@ public class PlayerInputs : MonoBehaviour
         _moveX = Input.GetAxis("Horizontal");
         _moveY = Input.GetAxis("Vertical");
         _motion.Set(_moveX, _moveY);
-        //Sprint
-        _run = Input.GetButton("Fire3");
+        RunPlayer();
         //jump du joueur
         _jump = Input.GetButtonDown("Jump");
         //crouch player
         CrouchPlayer();
     }
 
+    //Sprint method du player
+    private void RunPlayer()
+    {
+        _run = Input.GetButton("Fire3");
+
+        if (_run)
+            _crouch = false;
+    }
+
     //verifie si le joueur est accroupi ou non
     private void CrouchPlayer()
     {
         if (Input.GetButtonDown("Fire1"))
-        {
             if (!_crouch)
-            {
                 _crouch = true;
-            }
             else
-            {
                 _crouch = false;
-            }
-        }
     }
     #endregion
 }

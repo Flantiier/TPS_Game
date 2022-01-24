@@ -366,8 +366,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   walkSpeed: 3
-  rotateSpeedPlayer: 0.1
+  crouchSpeed: 2
   runningSpeed: 5
+  rotateSpeedPlayer: 0.1
   smoothSpeedRatio: 0.03
   jumpHeight: 5
   gravityValue: 9.81
