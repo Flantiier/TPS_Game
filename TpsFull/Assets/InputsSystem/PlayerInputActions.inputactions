@@ -31,7 +31,7 @@
                 },
                 {
                     "name": "Look",
-                    "type": "PassThrough",
+                    "type": "Value",
                     "id": "4352acb1-4d8d-4bef-a2d4-7ac1b4e66c92",
                     "expectedControlType": "Vector2",
                     "processors": "",
@@ -41,6 +41,14 @@
                     "name": "Crouch",
                     "type": "Button",
                     "id": "0cceb7a1-47a2-40d8-811b-039e96d1c6bf",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Aim",
+                    "type": "Button",
+                    "id": "d973e6d0-8574-4376-bc1e-bb48fc4afcd3",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
@@ -148,33 +156,22 @@
                 },
                 {
                     "name": "",
-                    "id": "6ca56dc8-2fee-4ff3-8224-cd02dbfff3b6",
-                    "path": "<Gamepad>/leftStickPress",
+                    "id": "4827d143-161a-4951-924e-aeb6c64ff818",
+                    "path": "<Gamepad>/rightStick",
                     "interactions": "",
-                    "processors": "",
+                    "processors": "StickDeadzone",
                     "groups": "GamePad",
-                    "action": "Run",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "2fa71e8b-97ec-4de6-9df3-42dd87b6b6b0",
-                    "path": "<Mouse>/delta",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard",
                     "action": "Look",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "",
-                    "id": "4827d143-161a-4951-924e-aeb6c64ff818",
-                    "path": "<Gamepad>/rightStick",
+                    "id": "f9606b1e-9df7-4206-adb2-fb706ec1c7e4",
+                    "path": "<Mouse>/delta",
                     "interactions": "",
                     "processors": "",
-                    "groups": "GamePad",
+                    "groups": "Keyboard",
                     "action": "Look",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -200,6 +197,39 @@
                     "action": "Crouch",
                     "isComposite": false,
                     "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "6ca56dc8-2fee-4ff3-8224-cd02dbfff3b6",
+                    "path": "<Gamepad>/leftStickPress",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "GamePad",
+                    "action": "Run",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2926177d-c4d2-4635-ba01-c9a0ed2ae750",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard",
+                    "action": "Aim",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3ed73d07-30ba-43a3-ace3-74a3e2676d00",
+                    "path": "<Gamepad>/rightTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "GamePad",
+                    "action": "Aim",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         }
@@ -211,6 +241,11 @@
             "devices": [
                 {
                     "devicePath": "<Keyboard>",
+                    "isOptional": false,
+                    "isOR": false
+                },
+                {
+                    "devicePath": "<Mouse>",
                     "isOptional": false,
                     "isOR": false
                 }
